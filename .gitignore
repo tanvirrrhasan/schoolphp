@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase
+.firebase/
+firestore-debug.log
+firestore-debug/
+storage-debug.log
+
+# Functions
+functions/node_modules/
+functions/lib/
+functions/.webpack/
+
+# Node environments
+node_modules/
+
+# Build folders
+dist/
+build/
