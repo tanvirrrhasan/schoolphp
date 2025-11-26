@@ -18,11 +18,12 @@ export default function PostDetailPage() {
     const loadPost = async () => {
       try {
         const data = await getDocument("posts", id);
-        if (data && data.published) {
+        if (data && (data as any).published) {
+          const dataAny = data as any;
           const postData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Post;
           setPost(postData);
         }

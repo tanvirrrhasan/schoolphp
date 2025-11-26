@@ -30,7 +30,7 @@ export default function PublicPage() {
         ]);
 
         if (docs.length > 0) {
-          const doc = docs[0];
+          const doc = docs[0] as any;
           setPage({
             ...doc,
             createdAt: convertTimestamp(doc.createdAt),
@@ -41,11 +41,11 @@ export default function PublicPage() {
         }
 
         const fallback = await getDocument("pages", slug);
-        if (fallback && fallback.published) {
+        if (fallback && (fallback as any).published) {
           setPage({
             ...fallback,
-            createdAt: convertTimestamp(fallback.createdAt),
-            updatedAt: convertTimestamp(fallback.updatedAt),
+            createdAt: convertTimestamp((fallback as any).createdAt),
+            updatedAt: convertTimestamp((fallback as any).updatedAt),
           } as WebPage);
         } else {
           setError("পেজ পাওয়া যায়নি");

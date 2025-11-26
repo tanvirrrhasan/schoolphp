@@ -45,10 +45,11 @@ export default function EditSupportStaffPage() {
       try {
         const data = await getDocument("supportStaff", id);
         if (data) {
+          const dataAny = data as any;
           const staffData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as SupportStaff;
           setMember(staffData);
           setPhotoPreview(staffData.photo || null);

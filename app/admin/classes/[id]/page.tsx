@@ -26,8 +26,12 @@ export default function EditClassPage() {
     control,
     formState: { errors },
     setValue,
-  } = useForm({
+  } = useForm<any>({
     defaultValues: {
+      name: "",
+      capacity: "",
+      status: "active",
+      sections: "",
       subjects: [{ name: "", textbooks: [{ name: "" }] }],
     },
   });
@@ -46,10 +50,11 @@ export default function EditClassPage() {
       try {
         const data = await getDocument("classes", id);
         if (data) {
+          const dataAny = data as any;
           const classDataLoaded = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Class;
           setClassData(classDataLoaded);
           setValue("name", classDataLoaded.name || classDataLoaded.nameBn);

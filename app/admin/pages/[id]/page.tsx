@@ -36,10 +36,11 @@ export default function EditPagePage() {
       try {
         const data = await getDocument("pages", id);
         if (data) {
+          const dataAny = data as any;
           const pageData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as WebPage;
           setPage(pageData);
           setImagePreview(pageData.image || null);

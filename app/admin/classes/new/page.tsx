@@ -16,8 +16,12 @@ export default function NewClassPage() {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm({
+  } = useForm<any>({
     defaultValues: {
+      name: "",
+      capacity: "",
+      status: "active",
+      sections: "",
       subjects: [{ name: "", textbooks: [{ name: "" }] }],
     },
   });

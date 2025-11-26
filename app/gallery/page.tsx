@@ -16,7 +16,7 @@ export default function GalleryPage() {
     const unsubscribe = subscribeToCollection("media", (docs) => {
       const library = docs.find((doc: MediaDocument) => doc.id === "library");
       if (library?.files) {
-        setImages(library.files.filter((url) => url.startsWith("data:image/")));
+        setImages(library.files.filter((url: string) => url.startsWith("data:image/")));
       }
     });
 

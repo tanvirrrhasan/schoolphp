@@ -35,10 +35,11 @@ export default function EditPostPage() {
       try {
         const data = await getDocument("posts", id);
         if (data) {
+          const dataAny = data as any;
           const postData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Post;
           setPost(postData);
           setImagePreview(postData.image || null);

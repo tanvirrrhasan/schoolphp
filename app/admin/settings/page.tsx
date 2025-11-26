@@ -74,11 +74,12 @@ export default function SettingsPage() {
           generalData = DEFAULT_GENERAL;
           await setDocument("settings", "general", generalData);
         }
-        setGeneralSettings(generalData as GeneralSettings);
-        setLogoPreview(generalData.logo || DEFAULT_GENERAL.logo || null);
-        setValue("schoolName", generalData.schoolName || DEFAULT_GENERAL.schoolName);
-        setValue("schoolCode", generalData.schoolCode || DEFAULT_GENERAL.schoolCode);
-        setValue("websiteInfo", generalData.websiteInfo || generalData.websiteInfoBn || DEFAULT_GENERAL.websiteInfo || "");
+        const generalDataAny = generalData as any;
+        setGeneralSettings(generalDataAny as GeneralSettings);
+        setLogoPreview(generalDataAny.logo || DEFAULT_GENERAL.logo || null);
+        setValue("schoolName", generalDataAny.schoolName || DEFAULT_GENERAL.schoolName);
+        setValue("schoolCode", generalDataAny.schoolCode || DEFAULT_GENERAL.schoolCode);
+        setValue("websiteInfo", generalDataAny.websiteInfo || generalDataAny.websiteInfoBn || DEFAULT_GENERAL.websiteInfo || "");
 
         // Load Head Settings
         let headData = await getDocument("settings", "head");
@@ -86,12 +87,13 @@ export default function SettingsPage() {
           headData = DEFAULT_HEAD;
           await setDocument("settings", "head", headData);
         }
-        setHeadSettings(headData as HeadSettings);
-        setHeadPhotoPreview(headData.photo || null);
-        setValue("headName", headData.name || headData.nameBn || DEFAULT_HEAD.name);
-        setValue("headDesignation", headData.designation || headData.designationBn || DEFAULT_HEAD.designation);
-        setValue("headQuote", headData.quote || headData.quoteBn || DEFAULT_HEAD.quote || "");
-        setValue("headTeacherLink", headData.teacherProfileLink || "");
+        const headDataAny = headData as any;
+        setHeadSettings(headDataAny as HeadSettings);
+        setHeadPhotoPreview(headDataAny.photo || null);
+        setValue("headName", headDataAny.name || headDataAny.nameBn || DEFAULT_HEAD.name);
+        setValue("headDesignation", headDataAny.designation || headDataAny.designationBn || DEFAULT_HEAD.designation);
+        setValue("headQuote", headDataAny.quote || headDataAny.quoteBn || DEFAULT_HEAD.quote || "");
+        setValue("headTeacherLink", headDataAny.teacherProfileLink || "");
 
         // Load Homepage Settings
         let homepageData = await getDocument("settings", "homepage");
@@ -99,8 +101,9 @@ export default function SettingsPage() {
           homepageData = DEFAULT_HOMEPAGE;
           await setDocument("settings", "homepage", homepageData);
         }
-        setHomepageSettings(homepageData as HomepageSettings);
-        setSliderImagePreviews(homepageData.sliderImages || []);
+        const homepageDataAny = homepageData as any;
+        setHomepageSettings(homepageDataAny as HomepageSettings);
+        setSliderImagePreviews(homepageDataAny.sliderImages || []);
       } catch (error: any) {
         console.error("Settings load error:", error);
         // Use defaults on error

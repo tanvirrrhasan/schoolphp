@@ -35,10 +35,11 @@ export default function EditCommitteePage() {
       try {
         const data = await getDocument("committee", id);
         if (data) {
+          const dataAny = data as any;
           const memberData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as CommitteeMember;
           setMember(memberData);
           setPhotoPreview(memberData.photo || null);

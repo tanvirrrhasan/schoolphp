@@ -25,8 +25,8 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
     const loadMedia = async () => {
       try {
         const data = await getDocument("media", "library");
-        if (data && data.files) {
-          setFiles(data.files);
+        if (data && (data as any).files) {
+          setFiles((data as any).files);
         }
       } catch (error) {
         // Media library doesn't exist yet, create it

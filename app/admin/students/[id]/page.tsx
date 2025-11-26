@@ -35,10 +35,11 @@ export default function EditStudentPage() {
       try {
         const data = await getDocument("students", id);
         if (data) {
+          const dataAny = data as any;
           const studentData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Student;
           setStudent(studentData);
           setPhotoPreview(studentData.photo || null);

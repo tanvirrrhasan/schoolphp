@@ -218,7 +218,9 @@ export default function BulkUpDownPage() {
                 type="file"
                 accept=".csv,.json"
                 className="hidden"
-                ref={(el) => (fileInputs.current[entity.key] = el)}
+                ref={(el) => {
+                  if (el) fileInputs.current[entity.key] = el;
+                }}
                 onChange={(event) => handleFileChange(entity.key, event)}
               />
             </div>

@@ -36,12 +36,13 @@ export default function EditNoticePage() {
       try {
         const data = await getDocument("notices", id);
         if (data) {
+          const dataAny = data as any;
           const noticeData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
-            scheduledTime: data.scheduledTime
-              ? convertTimestamp(data.scheduledTime)
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
+            scheduledTime: dataAny.scheduledTime
+              ? convertTimestamp(dataAny.scheduledTime)
               : undefined,
           } as Notice;
           setNotice(noticeData);

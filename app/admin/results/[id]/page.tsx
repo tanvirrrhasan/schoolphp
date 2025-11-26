@@ -48,11 +48,12 @@ export default function EditResultPage() {
       try {
         const data = await getDocument("results", id);
         if (data) {
+          const dataAny = data as any;
           const resultData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
-            publishedAt: data.publishedAt ? convertTimestamp(data.publishedAt) : undefined,
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
+            publishedAt: dataAny.publishedAt ? convertTimestamp(dataAny.publishedAt) : undefined,
           } as Result;
           setResult(resultData);
           setValue("title", resultData.title);

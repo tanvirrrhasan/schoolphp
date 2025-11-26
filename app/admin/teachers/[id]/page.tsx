@@ -35,10 +35,11 @@ export default function EditTeacherPage() {
       try {
         const data = await getDocument("teachers", id);
         if (data) {
+          const dataAny = data as any;
           const teacherData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Teacher;
           setTeacher(teacherData);
           setPhotoPreview(teacherData.photo || null);

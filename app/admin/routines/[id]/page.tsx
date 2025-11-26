@@ -35,10 +35,11 @@ export default function EditRoutinePage() {
       try {
         const data = await getDocument("routines", id);
         if (data) {
+          const dataAny = data as any;
           const routineData = {
-            ...data,
-            createdAt: convertTimestamp(data.createdAt),
-            updatedAt: convertTimestamp(data.updatedAt),
+            ...dataAny,
+            createdAt: convertTimestamp(dataAny.createdAt),
+            updatedAt: convertTimestamp(dataAny.updatedAt),
           } as Routine;
           setRoutine(routineData);
           setValue("title", routineData.title || routineData.titleBn);
