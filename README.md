@@ -34,8 +34,8 @@ A comprehensive school management system built with Next.js, PHP, and MySQL.
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd school-management
+   git clone https://github.com/tanvirrrhasan/schoolphp.git
+   cd schoolphp
    ```
 
 2. **Install dependencies**
@@ -56,7 +56,7 @@ A comprehensive school management system built with Next.js, PHP, and MySQL.
 5. **Environment Variables**
    - Create `.env.local` file:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost/school-management/api
+   NEXT_PUBLIC_API_URL=http://localhost/schoolphp/api
    ```
 
 6. **Development**
@@ -74,7 +74,7 @@ A comprehensive school management system built with Next.js, PHP, and MySQL.
 ## Project Structure
 
 ```
-school-management/
+schoolphp/
 ├── api/                 # PHP API endpoints
 │   ├── config.php      # Database configuration
 │   ├── crud.php        # CRUD operations
@@ -103,4 +103,3 @@ For detailed setup instructions in Bengali, see [XAMPP_SETUP_GUIDE.md](./XAMPP_S
 ## License
 
 MIT
-
