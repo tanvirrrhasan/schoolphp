@@ -140,7 +140,7 @@ export default function PostsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          href={`/admin/posts/${post.id}`}
+                          href={`/admin/posts/edit?id=${post.id}`}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                         >
                           <Edit size={18} />

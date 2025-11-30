@@ -94,6 +94,8 @@ export const compressImageToBase64 = (
           return;
         }
 
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
         // Try different quality levels to fit within target size
@@ -120,6 +122,8 @@ export const compressImageToBase64 = (
               quality = 0.1;
               canvas.width = width;
               canvas.height = height;
+              ctx.fillStyle = "#ffffff";
+              ctx.fillRect(0, 0, width, height);
               ctx.drawImage(img, 0, 0, width, height);
               base64 = canvas.toDataURL("image/jpeg", quality);
               sizeKB = base64.length / 1024;
@@ -128,6 +132,8 @@ export const compressImageToBase64 = (
 
             canvas.width = width;
             canvas.height = height;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
             quality = 0.7;
             base64 = canvas.toDataURL("image/jpeg", quality);

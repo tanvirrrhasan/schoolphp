@@ -27,7 +27,7 @@ import {
 
 const menuItems = [
   { name: "ড্যাশবোর্ড", href: "/admin", icon: LayoutDashboard },
-  { name: "মিডিয়া লাইব্রেরি", href: "/admin/media", icon: ImageIcon },
+  { name: "গ্যালারি", href: "/admin/media", icon: ImageIcon },
   { name: "নোটিশ", href: "/admin/notices", icon: Bell },
   { name: "ছাত্র-ছাত্রী", href: "/admin/students", icon: Users },
   { name: "অনলাইন ভর্তি", href: "/admin/admissions", icon: BookOpen },
@@ -64,14 +64,15 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white shadow-sm border-b">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold text-gray-800">অ্যাডমিন প্যানেল</h1>
+      <div className="lg:hidden fixed top-0 inset-x-0 z-50 bg-white shadow-sm border-b">
+        <div className="flex items-center justify-between px-4 py-3">
+          <h1 className="text-lg font-semibold text-gray-800">অ্যাডমিন প্যানেল</h1>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
           >
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            {sidebarOpen ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
           </button>
         </div>
       </div>
@@ -81,7 +82,7 @@ export default function AdminLayout({
         <aside
           className={`${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed`}
+          } fixed inset-y-0 left-0 z-[60] w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed`}
         >
           <div className="h-full flex flex-col overflow-hidden">
             <div className="p-4 lg:p-6 border-b flex-shrink-0">
@@ -95,7 +96,9 @@ export default function AdminLayout({
               <ul className="space-y-1 lg:space-y-2">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                  // Check if pathname matches exactly or starts with the href (for nested routes)
+                  const isActive = pathname === item.href || 
+                    (item.href !== "/admin" && pathname.startsWith(item.href + "/"));
                   return (
                     <li key={item.href}>
                       <Link
@@ -103,7 +106,7 @@ export default function AdminLayout({
                         onClick={() => setSidebarOpen(false)}
                         className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-colors text-sm lg:text-base ${
                           isActive
-                            ? "bg-blue-600 text-white"
+                            ? "bg-blue-600 text-white font-semibold"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
@@ -131,13 +134,13 @@ export default function AdminLayout({
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="lg:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Main Content */}
-        <main className="flex-1 w-0 lg:ml-64 min-w-0">
+        <main className="flex-1 w-0 lg:ml-64 min-w-0 pt-16 lg:pt-0">
           <div className="p-3 lg:p-8 max-w-full overflow-x-hidden">{children}</div>
         </main>
       </div>

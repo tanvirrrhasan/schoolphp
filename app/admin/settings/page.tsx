@@ -8,19 +8,8 @@ import {
 } from "@/lib/firebase/firestore";
 import { uploadFile, uploadMultipleFiles } from "@/lib/firebase/storage";
 import { changePassword } from "@/lib/firebase/auth";
-import { GeneralSettings, HeadSettings, HomepageSettings } from "@/types";
+import { HeadSettings, HomepageSettings } from "@/types";
 import { Lock, Save, Edit2, X } from "lucide-react";
-
-// Default demo data
-const DEFAULT_GENERAL: GeneralSettings = {
-  id: "general",
-  schoolName: "xxxxxx High School",
-  schoolNameBn: "xxxxxx High School",
-  schoolCode: "SCH001",
-  websiteInfo: "Welcome to our school. We provide quality education to all students.",
-  websiteInfoBn: "আমাদের স্কুলে স্বাগতম। আমরা সকল শিক্ষার্থীকে মানসম্মত শিক্ষা প্রদান করি।",
-  logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwN2NmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxPR088L3RleHQ+PC9zdmc+",
-};
 
 const DEFAULT_HEAD: HeadSettings = {
   id: "head",
@@ -44,15 +33,12 @@ const DEFAULT_HOMEPAGE: HomepageSettings = {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings | null>(null);
   const [headSettings, setHeadSettings] = useState<HeadSettings | null>(null);
   const [homepageSettings, setHomepageSettings] = useState<HomepageSettings | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "general" | "homepage" | "password" | "head"
-  >("general");
+    "homepage" | "password" | "head"
+  >("head");
   const [editingTab, setEditingTab] = useState<string | null>(null);
-  const [logo, setLogo] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [sliderImages, setSliderImages] = useState<File[]>([]);
   const [sliderImagePreviews, setSliderImagePreviews] = useState<string[]>([]);
   const [headPhoto, setHeadPhoto] = useState<File | null>(null);
@@ -68,19 +54,6 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Load General Settings
-        let generalData = await getDocument("settings", "general");
-        if (!generalData) {
-          generalData = DEFAULT_GENERAL;
-          await setDocument("settings", "general", generalData);
-        }
-        const generalDataAny = generalData as any;
-        setGeneralSettings(generalDataAny as GeneralSettings);
-        setLogoPreview(generalDataAny.logo || DEFAULT_GENERAL.logo || null);
-        setValue("schoolName", generalDataAny.schoolName || DEFAULT_GENERAL.schoolName);
-        setValue("schoolCode", generalDataAny.schoolCode || DEFAULT_GENERAL.schoolCode);
-        setValue("websiteInfo", generalDataAny.websiteInfo || generalDataAny.websiteInfoBn || DEFAULT_GENERAL.websiteInfo || "");
-
         // Load Head Settings
         let headData = await getDocument("settings", "head");
         if (!headData) {
@@ -107,7 +80,6 @@ export default function SettingsPage() {
       } catch (error: any) {
         console.error("Settings load error:", error);
         // Use defaults on error
-        setGeneralSettings(DEFAULT_GENERAL);
         setHeadSettings(DEFAULT_HEAD);
         setHomepageSettings(DEFAULT_HOMEPAGE);
       } finally {
@@ -118,18 +90,6 @@ export default function SettingsPage() {
     loadSettings();
   }, [setValue]);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLogo(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleHeadPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -139,47 +99,6 @@ export default function SettingsPage() {
         setHeadPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const onGeneralSubmit = async (data: any) => {
-    setSaving(true);
-    try {
-      let logoUrl = generalSettings?.logo || DEFAULT_GENERAL.logo || "";
-
-      if (logo) {
-        const existingData = {
-          schoolName: data.schoolName,
-          schoolNameBn: data.schoolName,
-          schoolCode: data.schoolCode,
-          logo: generalSettings?.logo || "",
-          websiteInfo: data.websiteInfo || "",
-          websiteInfoBn: data.websiteInfo || "",
-        };
-        logoUrl = await uploadFile(logo, `settings/logo_${Date.now()}`, existingData);
-      }
-
-      const settingsData: GeneralSettings = {
-        id: "general",
-        schoolName: data.schoolName,
-        schoolNameBn: data.schoolName,
-        schoolCode: data.schoolCode,
-        websiteInfo: data.websiteInfo || "",
-        websiteInfoBn: data.websiteInfo || "",
-        logo: logoUrl,
-      };
-
-      await setDocument("settings", "general", settingsData);
-
-      setGeneralSettings(settingsData);
-      setLogoPreview(logoUrl || null);
-      setLogo(null);
-      setEditingTab(null);
-      alert("সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে");
-    } catch (error: any) {
-      alert(error.message || "সংরক্ষণ ব্যর্থ হয়েছে");
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -229,8 +148,8 @@ export default function SettingsPage() {
   };
 
   const onHomepageSubmit = async () => {
-    if (sliderImages.length !== 3) {
-      alert("দয়া করে ঠিক ৩টি ছবি নির্বাচন করুন");
+    if (sliderImages.length === 0) {
+      alert("দয়া করে কমপক্ষে ১টি ছবি নির্বাচন করুন");
       return;
     }
 
@@ -302,16 +221,6 @@ export default function SettingsPage() {
         <div className="border-b">
           <div className="flex">
             <button
-              onClick={() => setActiveTab("general")}
-              className={`px-6 py-4 font-medium ${
-                activeTab === "general"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              সাধারণ তথ্য
-            </button>
-            <button
               onClick={() => setActiveTab("head")}
               className={`px-6 py-4 font-medium ${
                 activeTab === "head"
@@ -346,147 +255,6 @@ export default function SettingsPage() {
         </div>
 
         <div className="p-6">
-          {activeTab === "general" && (
-            <div className="space-y-6">
-              {editingTab !== "general" ? (
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800">সাধারণ তথ্য</h3>
-                    <button
-                      onClick={() => setEditingTab("general")}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      <Edit2 size={18} />
-                      সম্পাদনা করুন
-                    </button>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">স্কুলের নাম</label>
-                      <p className="text-lg text-gray-800 mt-1">
-                        {generalSettings?.schoolName || generalSettings?.schoolNameBn || DEFAULT_GENERAL.schoolName}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">স্কুল কোড</label>
-                      <p className="text-lg text-gray-800 mt-1">
-                        {generalSettings?.schoolCode || DEFAULT_GENERAL.schoolCode}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">লোগো</label>
-                      {logoPreview ? (
-                        <div className="mt-2">
-                          <img
-                            src={logoPreview}
-                            alt="Logo"
-                            className="h-20 object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 mt-1">লোগো আপলোড করা হয়নি</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">ওয়েবসাইট তথ্য</label>
-                      <p className="text-gray-800 mt-1">
-                        {generalSettings?.websiteInfo || generalSettings?.websiteInfoBn || DEFAULT_GENERAL.websiteInfo}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit(onGeneralSubmit)} className="space-y-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800">সাধারণ তথ্য সম্পাদনা</h3>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingTab(null);
-                        setLogo(null);
-                        setLogoPreview(generalSettings?.logo || DEFAULT_GENERAL.logo || null);
-                        setValue("schoolName", generalSettings?.schoolName || DEFAULT_GENERAL.schoolName);
-                        setValue("schoolCode", generalSettings?.schoolCode || DEFAULT_GENERAL.schoolCode);
-                        setValue("websiteInfo", generalSettings?.websiteInfo || generalSettings?.websiteInfoBn || DEFAULT_GENERAL.websiteInfo || "");
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                    >
-                      <X size={18} />
-                      বাতিল
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        স্কুলের নাম *
-                      </label>
-                      <input
-                        {...register("schoolName", { required: "স্কুলের নাম প্রয়োজন" })}
-                        type="text"
-                        placeholder="বাংলা বা ইংরেজি স্কুলের নাম"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        স্কুল কোড *
-                      </label>
-                      <input
-                        {...register("schoolCode", { required: "স্কুল কোড প্রয়োজন" })}
-                        type="text"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        লোগো
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      />
-                      {logoPreview && (
-                        <div className="mt-2">
-                          <img
-                            src={logoPreview}
-                            alt="Logo"
-                            className="h-20 object-contain"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        ওয়েবসাইট তথ্য
-                      </label>
-                      <textarea
-                        {...register("websiteInfo")}
-                        rows={4}
-                        placeholder="বাংলা বা ইংরেজি ওয়েবসাইট তথ্য"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    <Save size={18} />
-                    {saving ? "সংরক্ষণ হচ্ছে..." : "সংরক্ষণ করুন"}
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
-
           {activeTab === "head" && (
             <div className="space-y-6">
               {editingTab !== "head" ? (
@@ -704,10 +472,10 @@ export default function SettingsPage() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                        হোমপেজ স্লাইডার (৩টি ছবি)
+                        হোমপেজ স্লাইডার (যেকোনো সংখ্যক ছবি)
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
-                        হোমপেজ স্লাইডারের জন্য ৩টি একই সাইজের ছবি আপলোড করুন
+                        হোমপেজ স্লাইডারের জন্য একই সাইজের এক বা একাধিক ছবি আপলোড করুন
                       </p>
                       <input
                         type="file"
@@ -715,7 +483,7 @@ export default function SettingsPage() {
                         multiple
                         onChange={(e) => {
                           if (e.target.files) {
-                            const files = Array.from(e.target.files).slice(0, 3);
+                            const files = Array.from(e.target.files);
                             setSliderImages(files);
                           }
                         }}
@@ -738,7 +506,7 @@ export default function SettingsPage() {
 
                     <button
                       onClick={onHomepageSubmit}
-                      disabled={saving || sliderImages.length !== 3}
+                      disabled={saving || sliderImages.length === 0}
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                     >
                       {saving ? "সংরক্ষণ হচ্ছে..." : "স্লাইডার ছবি সংরক্ষণ করুন"}

@@ -10,9 +10,7 @@ import { uploadFile } from "@/lib/firebase/storage";
 
 type FormValues = {
   name: string;
-  nameBn: string;
   role: string;
-  roleBn: string;
   phone?: string;
   email?: string;
   published: string;
@@ -52,9 +50,9 @@ export default function NewSupportStaffPage() {
 
       await createDocument("supportStaff", {
         name: data.name,
-        nameBn: data.nameBn || data.name,
+        nameBn: data.name, // Use same value for both
         role: data.role,
-        roleBn: data.roleBn || data.role,
+        roleBn: data.role, // Use same value for both
         phone: data.phone || "",
         email: data.email || "",
         photo: photoUrl,
@@ -89,11 +87,12 @@ export default function NewSupportStaffPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              নাম (ইংরেজি) *
+              নাম * (বাংলা বা ইংরেজি)
             </label>
             <input
               type="text"
               {...register("name", { required: "নাম প্রয়োজন" })}
+              placeholder="বাংলা বা ইংরেজি যেকোনো ভাষায় লিখুন"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             {errors.name && (
@@ -102,41 +101,16 @@ export default function NewSupportStaffPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              নাম (বাংলা) *
-            </label>
-            <input
-              type="text"
-              {...register("nameBn", { required: "বাংলা নাম প্রয়োজন" })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.nameBn && (
-              <p className="text-sm text-red-600 mt-1">{errors.nameBn.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              পদবি (ইংরেজি) *
+              পদবি * (বাংলা বা ইংরেজি)
             </label>
             <input
               type="text"
               {...register("role", { required: "পদবি প্রয়োজন" })}
+              placeholder="বাংলা বা ইংরেজি যেকোনো ভাষায় লিখুন"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             {errors.role && (
               <p className="text-sm text-red-600 mt-1">{errors.role.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              পদবি (বাংলা) *
-            </label>
-            <input
-              type="text"
-              {...register("roleBn", { required: "বাংলা পদবি প্রয়োজন" })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.roleBn && (
-              <p className="text-sm text-red-600 mt-1">{errors.roleBn.message}</p>
             )}
           </div>
         </div>
@@ -185,17 +159,16 @@ export default function NewSupportStaffPage() {
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            প্রকাশ করুন
-          </label>
-          <select
+        <div className="flex items-center gap-3">
+          <input
             {...register("published")}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="false">না</option>
-            <option value="true">হ্যাঁ</option>
-          </select>
+            type="checkbox"
+            defaultChecked={true}
+            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <label className="block text-sm font-medium text-gray-700">
+            প্রকাশিত
+          </label>
         </div>
 
         <div className="flex gap-4">

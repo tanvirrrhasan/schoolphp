@@ -106,7 +106,7 @@ export default function SupportStaffAdminPage() {
               </p>
               <div className="flex items-center justify-between pt-4">
                 <Link
-                  href={`/admin/support-staff/${member.id}`}
+                  href={`/admin/support-staff/edit?id=${member.id}`}
                   className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700"
                 >
                   <Edit size={18} />

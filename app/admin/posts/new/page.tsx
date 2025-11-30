@@ -145,17 +145,16 @@ export default function NewPostPage() {
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            প্রকাশ করুন
-          </label>
-          <select
+        <div className="flex items-center gap-3">
+          <input
             {...register("published")}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="false">না</option>
-            <option value="true">হ্যাঁ</option>
-          </select>
+            type="checkbox"
+            defaultChecked={true}
+            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <label className="block text-sm font-medium text-gray-700">
+            প্রকাশিত
+          </label>
         </div>
 
         <div className="flex gap-4">

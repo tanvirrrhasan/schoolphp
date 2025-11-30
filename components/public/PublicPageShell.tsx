@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import PublicTopBar from "./PublicTopBar";
+import PublicFooter from "./PublicFooter";
 
 type PublicPageShellProps = {
   children: ReactNode;
@@ -19,7 +20,10 @@ export default function PublicPageShell({
   return (
     <>
       <PublicTopBar backHref={backHref} backLabel={backLabel} />
-      <div className={`min-h-screen pt-15 ${backgroundClassName}`}>{children}</div>
+      <div className={`min-h-screen pt-15 ${backgroundClassName}`}>
+        {children}
+        <PublicFooter />
+      </div>
     </>
   );
 }

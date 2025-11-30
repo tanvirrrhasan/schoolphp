@@ -100,7 +100,7 @@ export default function TeachersPage() {
                 </button>
                 <div className="flex gap-2">
                   <Link
-                    href={`/admin/teachers/${teacher.id}`}
+                    href={`/admin/teachers/edit?id=${teacher.id}`}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Edit size={18} />

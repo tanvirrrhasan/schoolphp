@@ -1,13 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
-import { getUserData } from "@/lib/firebase/auth";
+import { getCurrentUser, getUserData } from "@/lib/api/auth";
 import { User } from "@/types";
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: any | null; // User object from PHP API
   userData: User | null;
   loading: boolean;
   refreshUserData: () => Promise<void>;
@@ -18,32 +16,54 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshUserData = async () => {
-    if (user) {
-      const data = await getUserData(user.uid);
-      setUserData(data);
-    } else {
+    try {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        const data = await getUserData(currentUser.id.toString());
+        setUserData(data);
+      } else {
+        setUser(null);
+        setUserData(null);
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      setUser(null);
       setUserData(null);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        const data = await getUserData(firebaseUser.uid);
-        setUserData(data);
-      } else {
+    const checkAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          const data = await getUserData(currentUser.id.toString());
+          setUserData(data);
+        } else {
+          setUser(null);
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setUser(null);
         setUserData(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    checkAuth();
+
+    // Check auth state periodically (every 5 minutes)
+    const interval = setInterval(checkAuth, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

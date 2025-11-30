@@ -131,7 +131,7 @@ export default function PagesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end">
                         <Link
-                          href={`/admin/pages/${page.id}`}
+                          href={`/admin/pages/edit?id=${page.id}`}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                         >
                           <Edit size={18} />

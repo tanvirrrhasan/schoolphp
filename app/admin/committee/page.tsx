@@ -95,7 +95,7 @@ export default function CommitteePage() {
                 </button>
                 <div className="flex gap-2">
                   <Link
-                    href={`/admin/committee/${member.id}`}
+                    href={`/admin/committee/edit?id=${member.id}`}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Edit size={18} />

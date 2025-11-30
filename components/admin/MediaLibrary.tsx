@@ -4,8 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { uploadFile } from "@/lib/firebase/storage";
 import {
   getDocument,
-  updateDocument,
-  createDocument,
+  setDocument,
   subscribeToCollection,
 } from "@/lib/firebase/firestore";
 import { X, Upload, Image as ImageIcon, File, FileText } from "lucide-react";
@@ -19,28 +18,54 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
   const [files, setFiles] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [brokenThumbs, setBrokenThumbs] = useState<Record<string, boolean>>({});
+  const isUploadingRef = useRef(false);
+
+  const isImageUrl = (url: string) =>
+    url.startsWith("data:image/") ||
+    url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
 
   useEffect(() => {
-    // Load media library from Firestore
+    // Load gallery images from settings_homepage
     const loadMedia = async () => {
       try {
-        const data = await getDocument("media", "library");
-        if (data && (data as any).files) {
-          setFiles((data as any).files);
+        const homepageData = await getDocument("settings", "homepage") as any;
+        if (homepageData?.gallery) {
+          const galleryImages = homepageData.gallery.filter((url: string) => isImageUrl(url));
+          setFiles(galleryImages);
         }
       } catch (error) {
-        // Media library doesn't exist yet, create it
-        console.log("Media library not found, will be created on first upload");
+        console.log("Gallery not found, will be created on first upload");
       }
     };
 
     loadMedia();
 
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToCollection("media", (docs) => {
-      const mediaData = docs.find((doc: any) => doc.id === "library");
-      if (mediaData && mediaData.files) {
-        setFiles(mediaData.files);
+    // Subscribe to real-time updates from settings
+    const unsubscribe = subscribeToCollection("settings", (docs) => {
+      // Don't update during upload to prevent clearing
+      if (isUploadingRef.current) return;
+      
+      const homepageData = docs.find((doc: any) => doc.id === "homepage");
+      if (homepageData?.gallery && Array.isArray(homepageData.gallery)) {
+        const galleryImages = homepageData.gallery.filter((url: string) => isImageUrl(url));
+        // Always update with the latest data from database
+        setFiles(galleryImages);
+        setBrokenThumbs((prev) => {
+          const next: Record<string, boolean> = {};
+          galleryImages.forEach((url: string) => {
+            if (prev[url]) {
+              next[url] = true;
+            }
+          });
+          return next;
+        });
+      } else if (homepageData && !homepageData.gallery) {
+        // If homepage exists but no gallery field, set empty array only if we don't have files
+        if (files.length === 0) {
+          setFiles([]);
+          setBrokenThumbs({});
+        }
       }
     });
 
@@ -51,27 +76,65 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
 
+    // Filter only image files
+    const imageFiles = Array.from(selectedFiles).filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (imageFiles.length === 0) {
+      alert("শুধুমাত্র ছবি আপলোড করা যাবে");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
     setUploading(true);
+    isUploadingRef.current = true;
     try {
-      const uploadPromises = Array.from(selectedFiles).map((file) => {
-        const path = `media/${Date.now()}_${file.name}`;
-        return uploadFile(file, path);
-      });
+      // Load existing gallery images from settings_homepage
+      const homepageData = await getDocument("settings", "homepage") as any;
+      const baseFiles = Array.isArray(homepageData?.gallery)
+        ? homepageData.gallery.filter((url: string) => isImageUrl(url))
+        : [];
 
-      const urls = await Promise.all(uploadPromises);
-      const newFiles = [...files, ...urls];
+      const newlyUploaded: string[] = [];
 
-      // Save to Firestore
-      try {
-        await updateDocument("media", "library", { files: newFiles });
-      } catch (error) {
-        // Create if doesn't exist
-        await createDocument("media", { id: "library", files: newFiles });
+      for (const [index, file] of imageFiles.entries()) {
+        const path = `gallery/${Date.now()}_${index}_${file.name}`;
+        const snapshotData = { files: [...baseFiles, ...newlyUploaded] };
+        const url = await uploadFile(file, path, snapshotData);
+        newlyUploaded.push(url);
       }
 
+      const newFiles = [...baseFiles, ...newlyUploaded];
+
+      // Save to settings_homepage.gallery (for public gallery display)
+      await setDocument("settings", "homepage", {
+        id: "homepage",
+        sliderImages: homepageData?.sliderImages || [],
+        featuredSections: homepageData?.featuredSections || [],
+        gallery: newFiles,
+      });
+
+      // Update state immediately after successful save
       setFiles(newFiles);
+      setBrokenThumbs({});
+      
+      // Wait a bit before allowing subscription updates
+      setTimeout(() => {
+        isUploadingRef.current = false;
+        // Re-fetch to ensure we have the latest data
+        getDocument("settings", "homepage").then((data: any) => {
+          if (data?.gallery) {
+            const galleryImages = data.gallery.filter((url: string) => isImageUrl(url));
+            setFiles(galleryImages);
+          }
+        }).catch(() => {});
+      }, 1000);
     } catch (error: any) {
       alert(error.message || "ফাইল আপলোড ব্যর্থ হয়েছে");
+      isUploadingRef.current = false;
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -86,15 +149,28 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
     const newFiles = files.filter((f) => f !== url);
     
     try {
-      // Update Firestore
-      try {
-        await updateDocument("media", "library", { files: newFiles });
-      } catch (error) {
-        // Create if doesn't exist
-        await createDocument("media", { id: "library", files: newFiles });
-      }
+      // Remove from settings_homepage.gallery
+      const homepageData = await getDocument("settings", "homepage") as any;
       
+      await setDocument("settings", "homepage", {
+        id: "homepage",
+        sliderImages: homepageData?.sliderImages || [],
+        featuredSections: homepageData?.featuredSections || [],
+        gallery: newFiles,
+      });
+
+      // Update state immediately
       setFiles(newFiles);
+      
+      // Re-fetch after a short delay to ensure consistency
+      setTimeout(() => {
+        getDocument("settings", "homepage").then((data: any) => {
+          if (data?.gallery) {
+            const galleryImages = data.gallery.filter((url: string) => isImageUrl(url));
+            setFiles(galleryImages);
+          }
+        }).catch(() => {});
+      }, 500);
     } catch (error: any) {
       alert(error.message || "ফাইল মুছে ফেলা ব্যর্থ হয়েছে");
     }
@@ -114,15 +190,19 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
     return <File className="text-gray-500" size={24} />;
   };
 
+  // Filter to only show images
+  const imageFiles = files.filter((url) => isImageUrl(url));
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">মিডিয়া লাইব্রেরি</h2>
+        <h2 className="text-xl font-bold text-gray-800">গ্যালারি</h2>
         <div>
           <input
             ref={fileInputRef}
             type="file"
             multiple
+            accept="image/*"
             onChange={handleUpload}
             className="hidden"
             id="file-upload"
@@ -132,55 +212,74 @@ export default function MediaLibrary({ onSelect, multiple = false }: MediaLibrar
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
           >
             <Upload size={20} />
-            {uploading ? "আপলোড হচ্ছে..." : "ফাইল আপলোড করুন"}
+            {uploading ? "আপলোড হচ্ছে..." : "ছবি আপলোড করুন"}
           </label>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {files.map((url, index) => (
+        {imageFiles.map((url, index) => (
           <div
             key={index}
-            className="relative group border rounded-lg p-2 hover:shadow-md transition-shadow"
+            className="relative group border rounded-lg p-2 hover:shadow-md transition-shadow bg-white"
           >
-            <div className="aspect-square flex items-center justify-center bg-gray-50 rounded">
-              {url.startsWith("data:image/") || url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+            <div
+              className="aspect-square flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden"
+              style={{ aspectRatio: "1 / 1" }}
+            >
+              {!brokenThumbs[url] ? (
                 <img
                   src={url}
-                  alt={`Media ${index + 1}`}
-                  className="w-full h-full object-cover rounded"
+                  alt={`Gallery ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={() =>
+                    setBrokenThumbs((prev) => ({
+                      ...prev,
+                      [url]: true,
+                    }))
+                  }
                 />
               ) : (
-                getFileIcon(url)
+                <div className="flex flex-col items-center justify-center gap-2 text-gray-500 text-sm p-4 text-center">
+                  <ImageIcon className="text-blue-500" size={24} />
+                  <span className="line-clamp-2 break-all text-xs">
+                    Image preview unavailable
+                  </span>
+                </div>
               )}
             </div>
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded flex items-center justify-center gap-2">
-              {onSelect && (
+            {/* Always visible delete button in top-right corner */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(url);
+              }}
+              className="absolute top-3 right-3 p-1.5 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors z-10"
+              aria-label="Delete image"
+            >
+              <X size={14} />
+            </button>
+            {onSelect && (
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
                 <button
-                  onClick={() => onSelect(url)}
-                  className="opacity-0 group-hover:opacity-100 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(url);
+                  }}
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
                 >
                   নির্বাচন করুন
                 </button>
-              )}
-              <button
-                onClick={() => handleDelete(url)}
-                className="opacity-0 group-hover:opacity-100 p-1 bg-red-600 text-white rounded"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="mt-2 text-xs text-gray-600 truncate">
-              {url.startsWith("data:") ? "Base64 Image" : url.split("/").pop()}
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {files.length === 0 && (
+      {imageFiles.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           <Upload size={48} className="mx-auto mb-4 opacity-50" />
-          <p>কোনো ফাইল নেই। ফাইল আপলোড করুন।</p>
+          <p>কোনো ছবি নেই। ছবি আপলোড করুন।</p>
         </div>
       )}
     </div>

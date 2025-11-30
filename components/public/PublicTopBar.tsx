@@ -21,6 +21,8 @@ const navLinks: NavLink[] = [
   { href: "/admission", label: "ভর্তি" },
 ];
 
+const MAP_URL = "https://maps.app.goo.gl/BGgZH6dC2gEdq4pf7";
+
 export type PublicTopBarProps = {
   backHref?: string;
   backLabel?: string;
@@ -80,7 +82,7 @@ export default function PublicTopBar({
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <nav className="hidden lg:flex items-center gap-4 text-sm font-medium">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -94,11 +96,19 @@ export default function PublicTopBar({
                   {link.label}
                 </Link>
               ))}
+              <a
+                href={MAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-blue-500 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+              >
+                গুগল ম্যাপে দেখুন
+              </a>
             </nav>
 
             <button
               type="button"
-              className="md:hidden inline-flex items-center justify-center p-1.5 text-gray-700 hover:text-blue-600 transition-colors"
+              className="lg:hidden inline-flex items-center justify-center p-1.5 text-gray-700 hover:text-blue-600 transition-colors"
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label={menuOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
             >
@@ -129,6 +139,15 @@ export default function PublicTopBar({
               </Link>
             ))}
           </div>
+
+          <a
+            href={MAP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 block w-full rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+          >
+            গুগল ম্যাপে দেখুন
+          </a>
         </div>
       </div>
 

@@ -1,0 +1,23 @@
+# Apache Configuration for Next.js Static Export
+RewriteEngine On
+RewriteBase /
+
+# Handle API requests
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Handle Next.js static files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L]
+
+# Enable CORS for API
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Auth-Token"
+    
+    # Pass Authorization header to PHP (for Apache/XAMPP)
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+

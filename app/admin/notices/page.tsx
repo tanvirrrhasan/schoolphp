@@ -136,7 +136,7 @@ export default function NoticesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          href={`/admin/notices/${notice.id}`}
+                          href={`/admin/notices/edit?id=${notice.id}`}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                         >
                           <Edit size={18} />

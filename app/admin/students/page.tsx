@@ -171,7 +171,7 @@ export default function StudentsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          href={`/admin/students/${student.id}`}
+                          href={`/admin/students/edit?id=${student.id}`}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                         >
                           <Edit size={18} />

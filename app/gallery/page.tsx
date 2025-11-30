@@ -2,21 +2,42 @@
 
 import { useEffect, useState } from "react";
 import PublicPageShell from "@/components/public/PublicPageShell";
-import { subscribeToCollection } from "@/lib/firebase/firestore";
+import { subscribeToCollection, getDocument } from "@/lib/firebase/firestore";
 
-type MediaDocument = {
+type HomepageSettings = {
   id: string;
-  files?: string[];
+  gallery?: string[];
 };
 
 export default function GalleryPage() {
   const [images, setImages] = useState<string[]>([]);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+
+  // Helper function to check if URL is an image
+  const isImageUrl = (url: string) =>
+    url.startsWith("data:image/") ||
+    url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
 
   useEffect(() => {
-    const unsubscribe = subscribeToCollection("media", (docs) => {
-      const library = docs.find((doc: MediaDocument) => doc.id === "library");
-      if (library?.files) {
-        setImages(library.files.filter((url: string) => url.startsWith("data:image/")));
+    // Load initial data
+    const loadGallery = async () => {
+      try {
+        const homepageData = await getDocument("settings", "homepage") as HomepageSettings | null;
+        if (homepageData?.gallery) {
+          setImages(homepageData.gallery.filter((url: string) => isImageUrl(url)));
+        }
+      } catch (error) {
+        console.error("Gallery load error:", error);
+      }
+    };
+
+    loadGallery();
+
+    // Subscribe to changes
+    const unsubscribe = subscribeToCollection("settings", (docs) => {
+      const homepageData = docs.find((doc: any) => doc.id === "homepage") as HomepageSettings | undefined;
+      if (homepageData?.gallery) {
+        setImages(homepageData.gallery.filter((url: string) => isImageUrl(url)));
       }
     });
 
@@ -40,19 +61,42 @@ export default function GalleryPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((url, index) => (
-              <div
+              <button
                 key={`${url}-${index}`}
-                className="aspect-square bg-gray-200 rounded-lg overflow-hidden"
+                type="button"
+                onClick={() => setActiveImage(url)}
+                className="aspect-square bg-gray-200 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <img
                   src={url}
                   alt={`Gallery ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}
+
+      {activeImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80"
+          onClick={() => setActiveImage(null)}
+        >
+          <button
+            onClick={() => setActiveImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+          <img
+            src={activeImage}
+            alt="Full size"
+            className="max-w-full max-h-[90vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       </div>
     </PublicPageShell>
   );

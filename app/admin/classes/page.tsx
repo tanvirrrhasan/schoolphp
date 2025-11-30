@@ -100,7 +100,7 @@ export default function ClassesPage() {
 
             <div className="flex gap-2">
               <Link
-                href={`/admin/classes/${cls.id}`}
+                href={`/admin/classes/edit?id=${cls.id}`}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
               >
                 <Edit size={18} />

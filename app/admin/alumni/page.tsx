@@ -104,7 +104,7 @@ export default function AlumniPage() {
                 </button>
                 <div className="flex gap-2">
                   <Link
-                    href={`/admin/alumni/${alum.id}`}
+                    href={`/admin/alumni/edit?id=${alum.id}`}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Edit size={18} />

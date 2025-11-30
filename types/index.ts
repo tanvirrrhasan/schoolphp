@@ -125,6 +125,8 @@ export interface SupportStaff {
   roleBn: string;
   phone?: string;
   email?: string;
+  bio?: string;
+  bioBn?: string;
   published: boolean;
   createdAt: Date;
   updatedAt: Date;
