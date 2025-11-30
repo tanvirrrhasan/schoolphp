@@ -1,5 +1,5 @@
 // Authentication API Client
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/school-management/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://school.rf.gd/api';
 
 export interface User {
   id: string;
